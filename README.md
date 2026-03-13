@@ -6,18 +6,18 @@ It is intentionally minimal and focuses on **method clarity** rather than full e
 
 ## Included Materials
 
-- Paper: ~
-- Supplementary material: ~
-- Method figures: under [`figures/`](./figures/)
+- Paper: [FinFair-ECML.pdf](https://anonymous.4open.science/r/Finfair-CBC3/FinFair-ECML.pdf)
+- Supplementary material: [appendix.pdf](https://anonymous.4open.science/r/Finfair-CBC3/appendix.pdf)
+- Method figures: under [`figures/`](https://anonymous.4open.science/r/Finfair-CBC3/figures/)
 
 ## Method Overview
 
 FinFair targets a core fairness requirement in financial reasoning:
 
-> Two questions with identical financial semantics should receive the same answer, even if the only difference in the narrative is the demographic identity. Instead of producing different answers as shown in the figure below.
+> Two questions with the same financial semantics should receive the same answer even if only the demographic identity in the narrative changes.
 
 <p align="center">
-  <img src="./figures/sample.png" alt="Counterfactual bias pair example" width="700">
+  <img src="https://anonymous.4open.science/r/Finfair-CBC3/figures/sample.png" alt="Counterfactual bias pair example" width="700">
 </p>
 
 The method combines three components in one training framework:
@@ -32,7 +32,7 @@ The method combines three components in one training framework:
    Distills unbiased decision patterns from a rational teacher model.
 
 <p align="center">
-  <img src="./figures/framework.png" alt="FinFair framework" width="760">
+  <img src="https://anonymous.4open.science/r/Finfair-CBC3/figures/framework.png" alt="FinFair framework" width="760">
 </p>
 
 Together, these components improve:
@@ -46,7 +46,7 @@ Together, these components improve:
 The paper also introduces **HMA-BDE**, a semi-automated pipeline for generating attribute-controlled counterfactual financial pairs.
 
 <p align="center">
-  <img src="./figures/data_process.png" alt="HMA-BDE data pipeline" width="720">
+  <img src="https://anonymous.4open.science/r/Finfair-CBC3/figures/data_process.png" alt="HMA-BDE data pipeline" width="720">
 </p>
 
 This pipeline is used to create fairness-oriented training and evaluation samples where demographic attributes vary but financial semantics remain unchanged.
@@ -71,23 +71,23 @@ The anonymous code package is organized around method clarity:
 FinFair substantially improves lightweight models and can outperform larger LLM baselines in fairness robustness.
 
 <p align="center">
-  <img src="./figures/4_model_vs.png" alt="FinFair effectiveness on lightweight models" width="700">
+  <img src="https://anonymous.4open.science/r/Finfair-CBC3/figures/4_model_vs.png" alt="FinFair effectiveness on lightweight models" width="700">
 </p>
 
 <p align="center">
-  <img src="./figures/7_model_vs.png" alt="Comparison with LLMs" width="700">
+  <img src="https://anonymous.4open.science/r/Finfair-CBC3/figures/7_model_vs.png" alt="Comparison with LLMs" width="700">
 </p>
 
 The ablation study further shows that teacher-guided rational alignment and adversarial debiasing are complementary.
 
 <p align="center">
-  <img src="./figures/finfair_ablation.png" alt="Ablation study" width="700">
+  <img src="https://anonymous.4open.science/r/Finfair-CBC3/figures/finfair_ablation.png" alt="Ablation study" width="700">
 </p>
 
 Among the tested distillation strategies, KL-based soft distillation performs best.
 
 <p align="center">
-  <img src="./figures/finfair_distillation.png" alt="Distillation strategies" width="700">
+  <img src="https://anonymous.4open.science/r/Finfair-CBC3/figures/finfair_distillation.png" alt="Distillation strategies" width="700">
 </p>
 
 ## Citation
