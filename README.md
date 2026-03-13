@@ -6,8 +6,8 @@ It is intentionally minimal and focuses on **method clarity** rather than full e
 
 ## Included Materials
 
-- Paper: [FinFair-ECML.pdf](https://anonymous.4open.science/r/Finfair-CBC3/FinFair-ECML.pdf)
-- Supplementary material: [appendix.pdf](https://anonymous.4open.science/r/Finfair-CBC3/appendix.pdf)
+- Paper: ~
+- Supplementary material: ~
 - Method figures: under [`figures/`](https://anonymous.4open.science/r/Finfair-CBC3/figures/)
 
 ## Method Overview
