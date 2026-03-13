@@ -14,7 +14,7 @@ It is intentionally minimal and focuses on **method clarity** rather than full e
 
 FinFair targets a core fairness requirement in financial reasoning:
 
-> Two questions with the same financial semantics should receive the same answer even if only the demographic identity in the narrative changes.
+> Two questions with identical financial semantics should receive the same answer, even if the only difference in the narrative is the demographic identity. Instead of producing different answers as shown in the figure below.
 
 <p align="center">
   <img src="https://anonymous.4open.science/r/Finfair-CBC3/figures/sample.png" alt="Counterfactual bias pair example" width="700">
