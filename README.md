@@ -6,8 +6,8 @@ It is intentionally minimal and focuses on **method clarity** rather than full e
 
 ## Included Materials
 
-- Paper: [FinFair-ECML.pdf](./FinFair-ECML.pdf)
-- Supplementary material: [appendix.pdf](./appendix.pdf)
+- Paper: ~
+- Supplementary material: ~
 - Method figures: under [`figures/`](./figures/)
 
 ## Method Overview
