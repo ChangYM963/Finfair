@@ -16,21 +16,37 @@ Core objective:
 
 > Make lightweight financial decision models stable under non-economic demographic perturbations without sacrificing task correctness.
 
-## 2. Counterfactual Invariance
+## 2. Method Overview Example
+
+FinFair targets a core fairness requirement in financial reasoning:
+
+> Two questions with identical financial semantics should receive the same answer, even if the only difference in the narrative is the demographic identity.
+
+The figure below shows a gender-perturbed counterfactual pair. The financial scenario and answer options are semantically aligned, but a baseline model may produce different answers when the demographic descriptor changes.
+
+![Counterfactual pair example](assets/sample.png)
+
+FinFair combines three components in one training framework:
+
+1. **Baseline task learning** preserves financial reasoning performance on the main objective.
+2. **Bias-aware adversarial learning** suppresses sensitive demographic information in latent representations.
+3. **Rational-distribution alignment** uses a teacher model to keep the lightweight student close to rational financial decisions.
+
+## 3. Counterfactual Invariance
 
 The paper formulates fairness as **prediction invariance under demographic perturbations**. For a financial scenario $m$, let $x_m^{(v_1)}$ and $x_m^{(v_2)}$ be two variants that differ only in demographic descriptors. Ideally:
 
-$$
+```math
 f_\theta(x_m^{(v_1)}) = f_\theta(x_m^{(v_2)}),
 \qquad
 \forall (v_1,v_2)\in \mathcal{V}\times\mathcal{V},\ \forall m.
-$$
+```
 
 Here, $\mathcal{V}$ denotes the demographic perturbation set, such as gender, age, or region. A violation suggests that the model may be using demographic cues that are irrelevant to the underlying financial fundamentals.
 
 The regulatory-aligned feasible set is:
 
-$$
+```math
 \mathcal{F}_{\mathrm{reg}}
 =
 \left\{
@@ -38,11 +54,11 @@ $$
 f_\theta(x^{(v_1)}) = f_\theta(x^{(v_2)}),
 \ \forall (v_1,v_2)\in\mathcal{V}\times\mathcal{V},\ \forall x
 \right\}.
-$$
+```
 
 Because exact equality can be too rigid during stochastic training, the paper also uses an $\epsilon$-relaxed feasibility region:
 
-$$
+```math
 \mathcal{F}_{\mathrm{reg}}(\epsilon)
 =
 \left\{
@@ -53,33 +69,33 @@ $$
 \right]
 \le \epsilon
 \right\}.
-$$
+```
 
 This connects demographic fairness to a feasibility constraint in robust optimization.
 
-## 3. Robust Optimization View
+## 4. Robust Optimization View
 
 Let $\mathcal{D}$ be the distribution of financial scenarios and $\mathcal{V}$ the uncertainty set of demographic variants. A robust financial decision rule seeks:
 
-$$
+```math
 \min_{\theta}
 \mathbb{E}_{(x,y)\sim\mathcal{D}}
 \left[
 \max_{v\in\mathcal{V}}
 \ell_{\mathrm{task}}\big(f_\theta(x^{(v)}), y\big)
 \right].
-$$
+```
 
 With the regulatory feasibility constraint, the ideal target becomes:
 
-$$
+```math
 \min_{\theta \in \mathcal{F}_{\mathrm{reg}}(\epsilon)}
 \mathbb{E}_{(x,y)\sim\mathcal{D}}
 \left[
 \max_{v\in\mathcal{V}}
 \ell_{\mathrm{task}}(f_\theta(x^{(v)}), y)
 \right].
-$$
+```
 
 Directly optimizing this constrained min-max objective is difficult. FinFair therefore constructs a practical differentiable surrogate:
 
@@ -87,7 +103,7 @@ Directly optimizing this constrained min-max objective is difficult. FinFair the
 - adversarial learning approximates demographic min-max invariance;
 - teacher guidance acts as a soft projection toward the rational feasible region.
 
-## 4. FinFair Method
+## 5. FinFair Method
 
 FinFair combines three modules:
 
@@ -97,20 +113,20 @@ FinFair combines three modules:
 
 A lightweight encoder produces $h(x;\theta)$, and the multiple-choice decision head computes:
 
-$$
+```math
 z^y = W_y h(x;\theta) + b_y,
 \qquad
 p_\theta(y\mid x)=\mathrm{softmax}(z^y).
-$$
+```
 
 The main task objective is cross-entropy:
 
-$$
+```math
 L_{\mathrm{main}}
 =
 -\mathbb{E}_{(x,y)\sim\mathcal{D}}
 \log p_\theta(y\mid x).
-$$
+```
 
 This term keeps the model grounded in the financial reasoning task.
 
@@ -120,22 +136,22 @@ The adversarial bias head tries to recover the sensitive attribute $b$ from the 
 
 The adversarial loss is:
 
-$$
+```math
 L_{\mathrm{adv}}
 =
 -\mathbb{E}_{(x,b)\sim\mathcal{D}}
 \log p_\phi\big(b \mid \mathrm{GRL}(h(x;\theta))\big).
-$$
+```
 
 Its saddle-point interpretation is:
 
-$$
+```math
 \min_\theta \max_\phi
 \mathbb{E}_{(x,b)\sim\mathcal{D}}
 \left[
 \ell_{\mathrm{adv}}\big(\phi(h(x;\theta)), b\big)
 \right].
-$$
+```
 
 Intuitively, $\phi$ tries to identify demographic attributes, while $\theta$ learns representations from which those attributes are difficult to infer.
 
@@ -143,7 +159,7 @@ Intuitively, $\phi$ tries to identify demographic attributes, while $\theta$ lea
 
 Adversarial removal alone may discard useful financial information, especially for compact models. FinFair therefore introduces a rational teacher model trained on curated unbiased financial questions. The teacher is frozen, and the student is regularized toward the teacher distribution:
 
-$$
+```math
 L_{\mathrm{distill}}
 =
 \mathrm{KL}
@@ -156,7 +172,7 @@ p_\theta(y\mid x)
 \sum_y p_T(y\mid x)
 \log
 \frac{p_T(y\mid x)}{p_\theta(y\mid x)}.
-$$
+```
 
 This term acts as a soft constraint that keeps the student close to rational financial decision behavior.
 
@@ -164,7 +180,7 @@ This term acts as a soft constraint that keeps the student close to rational fin
 
 The paper's multi-objective optimization is:
 
-$$
+```math
 \min_\theta
 \left[
 L_{\mathrm{main}}
@@ -175,11 +191,11 @@ L_{\mathrm{main}}
 \right],
 \qquad
 L_{\mathrm{adv}}^\star = \max_\phi L_{\mathrm{adv}}(\theta,\phi).
-$$
+```
 
 In practical training, GRL approximates the saddle point, yielding:
 
-$$
+```math
 L_{\mathrm{total}}
 =
 L_{\mathrm{main}}
@@ -187,11 +203,11 @@ L_{\mathrm{main}}
 \alpha_{\mathrm{adv}} L_{\mathrm{adv}}
 +
 \beta_T L_{\mathrm{distill}}.
-$$
+```
 
 The public skeleton is in [`src/finfair_skeleton.py`](src/finfair_skeleton.py). It exposes the module interfaces and objective structure, but not the full backbone selection, tokenizer, collator, optimizer, training loop, GPU setup, or checkpoint logic.
 
-## 5. HMA-BDE Data Construction
+## 6. HMA-BDE Data Construction
 
 The paper also proposes HMA-BDE, a human-machine automatic bias data expansion pipeline for creating attribute-controlled counterfactual financial pairs. The high-level process is:
 
@@ -218,13 +234,13 @@ The demo JSONL format is:
 
 Examples with the same `base_id` are demographic variants of the same financial scenario. The demo includes only a few manually prepared examples, not the full HMA-BDE dataset, prompts, or filtering rules.
 
-## 6. Evaluation Metrics
+## 7. Evaluation Metrics
 
 The paper evaluates both correctness and counterfactual stability.
 
 ### Sample-level Accuracy
 
-$$
+```math
 \mathrm{Acc}
 =
 \frac{1}{N}
@@ -233,13 +249,13 @@ $$
 \left[
 \hat{y}_i = y_i
 \right].
-$$
+```
 
 ### Intra-group Consistency
 
 For a counterfactual group $G_m$, the group is consistent when all variants receive the same prediction:
 
-$$
+```math
 \mathrm{Cons}
 =
 \frac{1}{M}
@@ -248,13 +264,13 @@ $$
 \left[
 |\{ \hat{y}_i : i\in G_m \}| = 1
 \right].
-$$
+```
 
 ### Consistency-Correctness
 
 The prediction must be both consistent and correct:
 
-$$
+```math
 \mathrm{CC}
 =
 \frac{1}{M}
@@ -265,11 +281,11 @@ $$
 \ \land\
 \hat{y}_{G_m}=y_{G_m}
 \right].
-$$
+```
 
 Metric code is in [`src/metrics.py`](src/metrics.py).
 
-## 7. Run the Demo
+## 8. Run the Demo
 
 From `submission_demo/`:
 
@@ -290,7 +306,7 @@ finfair_demo | 1.000           | 1.000                   | 1.000                
 
 The `finfair_demo` predictions are prepared examples used to demonstrate the evaluation protocol. They are not generated from a public checkpoint.
 
-## 8. Selected Paper Results
+## 9. Selected Paper Results
 
 ### Baseline vs. FinFair
 
@@ -340,7 +356,7 @@ The teacher-guided rational alignment provides the dominant stability gain, whil
 
 KL soft distillation preserves the teacher distribution, including uncertainty, inter-option relationships, and preference ordering, making it more effective for transferring rationality signals.
 
-## 9. Public Release Boundary
+## 10. Public Release Boundary
 
 This demo releases:
 

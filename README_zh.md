@@ -16,21 +16,37 @@ FinFair 的核心目标是：
 
 > 在保持金融推理准确性的同时，让轻量模型对非经济人口属性扰动保持稳定。
 
-## 2. Counterfactual Invariance 定义
+## 2. 方法概览示例
+
+FinFair 关注金融推理中的一个核心公平性要求：
+
+> 如果两个问题的金融语义完全相同，只是叙事中的人口身份不同，那么模型应给出相同答案。
+
+下图展示了一个 gender-perturbed counterfactual pair。两个样本的金融场景和选项在语义上是一致的，但普通 baseline 可能因为 demographic descriptor 改变而输出不同答案。
+
+![Counterfactual pair example](assets/sample.png)
+
+FinFair 将三个组件放在同一个训练框架中：
+
+1. **Baseline task learning**：保持主任务上的金融推理能力。
+2. **Bias-aware adversarial learning**：抑制 latent representation 中的敏感人口属性信息。
+3. **Rational-distribution alignment**：通过 teacher model 让轻量 student 靠近理性的金融决策分布。
+
+## 3. Counterfactual Invariance 定义
 
 论文将公平性表述为一种 **demographic perturbation 下的预测不变性**。设同一金融场景 $m$ 存在两个只改变人口属性描述的变体 $x_m^{(v_1)}$ 与 $x_m^{(v_2)}$，理想情况下模型应满足：
 
-$$
+```math
 f_\theta(x_m^{(v_1)}) = f_\theta(x_m^{(v_2)}),
 \qquad
 \forall (v_1,v_2)\in \mathcal{V}\times\mathcal{V},\ \forall m.
-$$
+```
 
 其中 $\mathcal{V}$ 是人口属性扰动集合，例如 gender、age、region。若同一金融语义下，仅因属性描述不同导致模型预测变化，则说明模型可能利用了与金融基本面无关的人口属性线索。
 
 论文进一步定义 regulatory-aligned feasible set：
 
-$$
+```math
 \mathcal{F}_{\mathrm{reg}}
 =
 \left\{
@@ -38,11 +54,11 @@ $$
 f_\theta(x^{(v_1)}) = f_\theta(x^{(v_2)}),
 \ \forall (v_1,v_2)\in\mathcal{V}\times\mathcal{V},\ \forall x
 \right\}.
-$$
+```
 
 考虑到训练过程中的随机性，论文使用 $\epsilon$-relaxed feasibility region：
 
-$$
+```math
 \mathcal{F}_{\mathrm{reg}}(\epsilon)
 =
 \left\{
@@ -53,33 +69,33 @@ $$
 \right]
 \le \epsilon
 \right\}.
-$$
+```
 
 这个定义把“公平性”转化为一个 robust optimization 中的可行域约束。
 
-## 3. Robust Optimization 视角
+## 4. Robust Optimization 视角
 
 如果 $\mathcal{D}$ 表示金融场景分布，$\mathcal{V}$ 表示人口属性扰动集合，那么稳健金融决策规则可以写作：
 
-$$
+```math
 \min_{\theta}
 \mathbb{E}_{(x,y)\sim\mathcal{D}}
 \left[
 \max_{v\in\mathcal{V}}
 \ell_{\mathrm{task}}\big(f_\theta(x^{(v)}), y\big)
 \right].
-$$
+```
 
 进一步加入 regulatory feasibility 后，论文中的理想目标为：
 
-$$
+```math
 \min_{\theta \in \mathcal{F}_{\mathrm{reg}}(\epsilon)}
 \mathbb{E}_{(x,y)\sim\mathcal{D}}
 \left[
 \max_{v\in\mathcal{V}}
 \ell_{\mathrm{task}}(f_\theta(x^{(v)}), y)
 \right].
-$$
+```
 
 直接优化这个目标很难，所以 FinFair 用三个可微模块构造可训练近似：
 
@@ -87,7 +103,7 @@ $$
 - 对抗模块近似 demographic perturbation 下的 min-max invariance；
 - teacher-guidance 模块作为 soft projection，把 student 拉向 rational decision set。
 
-## 4. FinFair 方法结构
+## 5. FinFair 方法结构
 
 FinFair 由三个模块组成：
 
@@ -97,20 +113,20 @@ FinFair 由三个模块组成：
 
 轻量 encoder 产生表示 $h(x;\theta)$，多选任务头输出：
 
-$$
+```math
 z^y = W_y h(x;\theta) + b_y,
 \qquad
 p_\theta(y\mid x)=\mathrm{softmax}(z^y).
-$$
+```
 
 主任务 loss 是标准交叉熵：
 
-$$
+```math
 L_{\mathrm{main}}
 =
 -\mathbb{E}_{(x,y)\sim\mathcal{D}}
 \log p_\theta(y\mid x).
-$$
+```
 
 这一项保证模型仍然学习金融决策任务本身，而不是只追求形式上的一致性。
 
@@ -120,22 +136,22 @@ $$
 
 对抗 loss 为：
 
-$$
+```math
 L_{\mathrm{adv}}
 =
 -\mathbb{E}_{(x,b)\sim\mathcal{D}}
 \log p_\phi\big(b \mid \mathrm{GRL}(h(x;\theta))\big).
-$$
+```
 
 对应的 saddle-point 形式是：
 
-$$
+```math
 \min_\theta \max_\phi
 \mathbb{E}_{(x,b)\sim\mathcal{D}}
 \left[
 \ell_{\mathrm{adv}}\big(\phi(h(x;\theta)), b\big)
 \right].
-$$
+```
 
 直观上，$\phi$ 尽力识别敏感属性，$\theta$ 则学习让表示对敏感属性不可识别。
 
@@ -143,7 +159,7 @@ $$
 
 单纯对抗去偏可能会过度删除有用金融信息，尤其是在轻量模型容量有限时。FinFair 因此引入 rational teacher。teacher 在 curated unbiased financial questions 上训练，然后被冻结，用其输出分布 $p_T(y\mid x)$ 约束 student：
 
-$$
+```math
 L_{\mathrm{distill}}
 =
 \mathrm{KL}
@@ -156,7 +172,7 @@ p_\theta(y\mid x)
 \sum_y p_T(y\mid x)
 \log
 \frac{p_T(y\mid x)}{p_\theta(y\mid x)}.
-$$
+```
 
 这一项相当于一个 soft constraint，使 student 的决策分布靠近 rational decision set，避免对抗训练牺牲金融合理性。
 
@@ -164,7 +180,7 @@ $$
 
 论文中的多目标优化形式为：
 
-$$
+```math
 \min_\theta
 \left[
 L_{\mathrm{main}}
@@ -175,11 +191,11 @@ L_{\mathrm{main}}
 \right],
 \qquad
 L_{\mathrm{adv}}^\star = \max_\phi L_{\mathrm{adv}}(\theta,\phi).
-$$
+```
 
 实际训练中使用 GRL 近似 saddle point，显式总损失为：
 
-$$
+```math
 L_{\mathrm{total}}
 =
 L_{\mathrm{main}}
@@ -187,11 +203,11 @@ L_{\mathrm{main}}
 \alpha_{\mathrm{adv}} L_{\mathrm{adv}}
 +
 \beta_T L_{\mathrm{distill}}.
-$$
+```
 
 公开 skeleton 代码位于 [`src/finfair_skeleton.py`](src/finfair_skeleton.py)。它只保留上述目标函数和模块接口，不包含真实模型选择、tokenizer、collator、优化器、训练循环、GPU 配置或 checkpoint 逻辑。
 
-## 5. HMA-BDE 数据构造
+## 6. HMA-BDE 数据构造
 
 论文还提出 HMA-BDE，用于构造 attribute-controlled counterfactual financial pairs。基本流程是：
 
@@ -218,13 +234,13 @@ demo 中的 JSONL 样例格式如下：
 
 同一 `base_id` 下的样本是同一金融场景的不同 demographic variants。demo 只提供少量人工整理样例，不包含完整 HMA-BDE 数据、完整 prompt 或过滤规则。
 
-## 6. 评估指标
+## 7. 评估指标
 
 论文不只看单样本准确率，而是同时评估“是否答对”和“同一题组是否稳定”。
 
 ### Sample-level Accuracy
 
-$$
+```math
 \mathrm{Acc}
 =
 \frac{1}{N}
@@ -233,13 +249,13 @@ $$
 \left[
 \hat{y}_i = y_i
 \right].
-$$
+```
 
 ### Intra-group Consistency
 
 对每个反事实题组 $G_m$，若组内所有 variants 的预测一致，则该题组 consistent：
 
-$$
+```math
 \mathrm{Cons}
 =
 \frac{1}{M}
@@ -248,13 +264,13 @@ $$
 \left[
 |\{ \hat{y}_i : i\in G_m \}| = 1
 \right].
-$$
+```
 
 ### Consistency-Correctness
 
 题组不仅要预测一致，还要预测正确：
 
-$$
+```math
 \mathrm{CC}
 =
 \frac{1}{M}
@@ -265,11 +281,11 @@ $$
 \ \land\
 \hat{y}_{G_m}=y_{G_m}
 \right].
-$$
+```
 
 指标实现见 [`src/metrics.py`](src/metrics.py)。
 
-## 7. 运行 Demo
+## 8. 运行 Demo
 
 在 `submission_demo/` 目录下运行：
 
@@ -290,7 +306,7 @@ finfair_demo | 1.000           | 1.000                   | 1.000                
 
 这里的 `finfair_demo` 是准备好的示例预测，用于展示论文中的评估协议。它不是公开 checkpoint 的实时推理结果。
 
-## 8. 论文实验结果概览
+## 9. 论文实验结果概览
 
 ### Baseline vs. FinFair
 
@@ -340,7 +356,7 @@ finfair_demo | 1.000           | 1.000                   | 1.000                
 
 KL soft distillation 保留 teacher 输出分布的完整结构，包括不确定性、选项间关系和偏好排序，因此最能传递 rationality signal。
 
-## 9. 公开代码边界
+## 10. 公开代码边界
 
 这个 demo 公开：
 
