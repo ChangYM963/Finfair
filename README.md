@@ -24,7 +24,9 @@ FinFair targets a core fairness requirement in financial reasoning:
 
 The figure below shows a gender-perturbed counterfactual pair. The financial scenario and answer options are semantically aligned, but a baseline model may produce different answers when the demographic descriptor changes.
 
-![Counterfactual pair example](assets/sample.png)
+<p align="center">
+  <img src="assets/sample.png" alt="Counterfactual pair example" width="86%">
+</p>
 
 FinFair combines three components in one training framework:
 
@@ -36,7 +38,7 @@ FinFair combines three components in one training framework:
 
 The paper formulates fairness as **prediction invariance under demographic perturbations**. For a financial scenario $m$, let $x_m^{(v_1)}$ and $x_m^{(v_2)}$ be two variants that differ only in demographic descriptors. Ideally:
 
-```math
+```text
 f_\theta(x_m^{(v_1)}) = f_\theta(x_m^{(v_2)}),
 \qquad
 \forall (v_1,v_2)\in \mathcal{V}\times\mathcal{V},\ \forall m.
@@ -46,7 +48,7 @@ Here, $\mathcal{V}$ denotes the demographic perturbation set, such as gender, ag
 
 The regulatory-aligned feasible set is:
 
-```math
+```text
 \mathcal{F}_{\mathrm{reg}}
 =
 \left\{
@@ -58,7 +60,7 @@ f_\theta(x^{(v_1)}) = f_\theta(x^{(v_2)}),
 
 Because exact equality can be too rigid during stochastic training, the paper also uses an $\epsilon$-relaxed feasibility region:
 
-```math
+```text
 \mathcal{F}_{\mathrm{reg}}(\epsilon)
 =
 \left\{
@@ -77,7 +79,7 @@ This connects demographic fairness to a feasibility constraint in robust optimiz
 
 Let $\mathcal{D}$ be the distribution of financial scenarios and $\mathcal{V}$ the uncertainty set of demographic variants. A robust financial decision rule seeks:
 
-```math
+```text
 \min_{\theta}
 \mathbb{E}_{(x,y)\sim\mathcal{D}}
 \left[
@@ -88,7 +90,7 @@ Let $\mathcal{D}$ be the distribution of financial scenarios and $\mathcal{V}$ t
 
 With the regulatory feasibility constraint, the ideal target becomes:
 
-```math
+```text
 \min_{\theta \in \mathcal{F}_{\mathrm{reg}}(\epsilon)}
 \mathbb{E}_{(x,y)\sim\mathcal{D}}
 \left[
@@ -107,13 +109,15 @@ Directly optimizing this constrained min-max objective is difficult. FinFair the
 
 FinFair combines three modules:
 
-![FinFair framework](assets/framework.png)
+<p align="center">
+  <img src="assets/framework.png" alt="FinFair framework" width="82%">
+</p>
 
 ### 4.1 Main-Task-Head
 
 A lightweight encoder produces $h(x;\theta)$, and the multiple-choice decision head computes:
 
-```math
+```text
 z^y = W_y h(x;\theta) + b_y,
 \qquad
 p_\theta(y\mid x)=\mathrm{softmax}(z^y).
@@ -121,7 +125,7 @@ p_\theta(y\mid x)=\mathrm{softmax}(z^y).
 
 The main task objective is cross-entropy:
 
-```math
+```text
 L_{\mathrm{main}}
 =
 -\mathbb{E}_{(x,y)\sim\mathcal{D}}
@@ -136,7 +140,7 @@ The adversarial bias head tries to recover the sensitive attribute $b$ from the 
 
 The adversarial loss is:
 
-```math
+```text
 L_{\mathrm{adv}}
 =
 -\mathbb{E}_{(x,b)\sim\mathcal{D}}
@@ -145,7 +149,7 @@ L_{\mathrm{adv}}
 
 Its saddle-point interpretation is:
 
-```math
+```text
 \min_\theta \max_\phi
 \mathbb{E}_{(x,b)\sim\mathcal{D}}
 \left[
@@ -159,7 +163,7 @@ Intuitively, $\phi$ tries to identify demographic attributes, while $\theta$ lea
 
 Adversarial removal alone may discard useful financial information, especially for compact models. FinFair therefore introduces a rational teacher model trained on curated unbiased financial questions. The teacher is frozen, and the student is regularized toward the teacher distribution:
 
-```math
+```text
 L_{\mathrm{distill}}
 =
 \mathrm{KL}
@@ -180,7 +184,7 @@ This term acts as a soft constraint that keeps the student close to rational fin
 
 The paper's multi-objective optimization is:
 
-```math
+```text
 \min_\theta
 \left[
 L_{\mathrm{main}}
@@ -195,7 +199,7 @@ L_{\mathrm{adv}}^\star = \max_\phi L_{\mathrm{adv}}(\theta,\phi).
 
 In practical training, GRL approximates the saddle point, yielding:
 
-```math
+```text
 L_{\mathrm{total}}
 =
 L_{\mathrm{main}}
@@ -217,7 +221,9 @@ The paper also proposes HMA-BDE, a human-machine automatic bias data expansion p
 4. apply automatic filtering and human re-screening to reduce semantic drift and category mixing;
 5. produce counterfactual evaluation groups indexed by `base_id`.
 
-![HMA-BDE data process](assets/data_process.png)
+<p align="center">
+  <img src="assets/data_process.png" alt="HMA-BDE data process" width="68%">
+</p>
 
 The demo JSONL format is:
 
@@ -240,7 +246,7 @@ The paper evaluates both correctness and counterfactual stability.
 
 ### Sample-level Accuracy
 
-```math
+```text
 \mathrm{Acc}
 =
 \frac{1}{N}
@@ -255,7 +261,7 @@ The paper evaluates both correctness and counterfactual stability.
 
 For a counterfactual group $G_m$, the group is consistent when all variants receive the same prediction:
 
-```math
+```text
 \mathrm{Cons}
 =
 \frac{1}{M}
@@ -270,7 +276,7 @@ For a counterfactual group $G_m$, the group is consistent when all variants rece
 
 The prediction must be both consistent and correct:
 
-```math
+```text
 \mathrm{CC}
 =
 \frac{1}{M}
@@ -310,13 +316,17 @@ The `finfair_demo` predictions are prepared examples used to demonstrate the eva
 
 ### Baseline vs. FinFair
 
-![Baseline vs FinFair](assets/baseline_vs_finfair.png)
+<p align="center">
+  <img src="assets/baseline_vs_finfair.png" alt="Baseline vs FinFair" width="78%">
+</p>
 
 The paper reports that ordinary lightweight supervised baselines show weak counterfactual consistency, while FinFair improves both consistency and consistency-correctness.
 
 ### Lightweight Models and LLM Baselines
 
-![Seven model comparison](assets/7_model_vs.png)
+<p align="center">
+  <img src="assets/7_model_vs.png" alt="Seven model comparison" width="92%">
+</p>
 
 Selected results:
 
@@ -332,7 +342,9 @@ The main takeaway is that compact FinFair-trained models can match or exceed lar
 
 ### Ablation Study
 
-![FinFair ablation](assets/finfair_ablation.png)
+<p align="center">
+  <img src="assets/finfair_ablation.png" alt="FinFair ablation" width="84%">
+</p>
 
 | Variant | Consistency | Sample Acc. | Consistent-Correct |
 |---|---:|---:|---:|
@@ -345,7 +357,9 @@ The teacher-guided rational alignment provides the dominant stability gain, whil
 
 ### Distillation Strategies
 
-![FinFair distillation](assets/finfair_distillation.png)
+<p align="center">
+  <img src="assets/finfair_distillation.png" alt="FinFair distillation" width="84%">
+</p>
 
 | Distillation Strategy | Consistency | Sample Acc. | Consistent-Correct |
 |---|---:|---:|---:|

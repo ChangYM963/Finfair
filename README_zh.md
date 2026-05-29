@@ -24,7 +24,9 @@ FinFair 关注金融推理中的一个核心公平性要求：
 
 下图展示了一个 gender-perturbed counterfactual pair。两个样本的金融场景和选项在语义上是一致的，但普通 baseline 可能因为 demographic descriptor 改变而输出不同答案。
 
-![Counterfactual pair example](assets/sample.png)
+<p align="center">
+  <img src="assets/sample.png" alt="Counterfactual pair example" width="86%">
+</p>
 
 FinFair 将三个组件放在同一个训练框架中：
 
@@ -36,7 +38,7 @@ FinFair 将三个组件放在同一个训练框架中：
 
 论文将公平性表述为一种 **demographic perturbation 下的预测不变性**。设同一金融场景 $m$ 存在两个只改变人口属性描述的变体 $x_m^{(v_1)}$ 与 $x_m^{(v_2)}$，理想情况下模型应满足：
 
-```math
+```text
 f_\theta(x_m^{(v_1)}) = f_\theta(x_m^{(v_2)}),
 \qquad
 \forall (v_1,v_2)\in \mathcal{V}\times\mathcal{V},\ \forall m.
@@ -46,7 +48,7 @@ f_\theta(x_m^{(v_1)}) = f_\theta(x_m^{(v_2)}),
 
 论文进一步定义 regulatory-aligned feasible set：
 
-```math
+```text
 \mathcal{F}_{\mathrm{reg}}
 =
 \left\{
@@ -58,7 +60,7 @@ f_\theta(x^{(v_1)}) = f_\theta(x^{(v_2)}),
 
 考虑到训练过程中的随机性，论文使用 $\epsilon$-relaxed feasibility region：
 
-```math
+```text
 \mathcal{F}_{\mathrm{reg}}(\epsilon)
 =
 \left\{
@@ -77,7 +79,7 @@ f_\theta(x^{(v_1)}) = f_\theta(x^{(v_2)}),
 
 如果 $\mathcal{D}$ 表示金融场景分布，$\mathcal{V}$ 表示人口属性扰动集合，那么稳健金融决策规则可以写作：
 
-```math
+```text
 \min_{\theta}
 \mathbb{E}_{(x,y)\sim\mathcal{D}}
 \left[
@@ -88,7 +90,7 @@ f_\theta(x^{(v_1)}) = f_\theta(x^{(v_2)}),
 
 进一步加入 regulatory feasibility 后，论文中的理想目标为：
 
-```math
+```text
 \min_{\theta \in \mathcal{F}_{\mathrm{reg}}(\epsilon)}
 \mathbb{E}_{(x,y)\sim\mathcal{D}}
 \left[
@@ -107,13 +109,15 @@ f_\theta(x^{(v_1)}) = f_\theta(x^{(v_2)}),
 
 FinFair 由三个模块组成：
 
-![FinFair framework](assets/framework.png)
+<p align="center">
+  <img src="assets/framework.png" alt="FinFair framework" width="82%">
+</p>
 
 ### 4.1 Main-Task-Head
 
 轻量 encoder 产生表示 $h(x;\theta)$，多选任务头输出：
 
-```math
+```text
 z^y = W_y h(x;\theta) + b_y,
 \qquad
 p_\theta(y\mid x)=\mathrm{softmax}(z^y).
@@ -121,7 +125,7 @@ p_\theta(y\mid x)=\mathrm{softmax}(z^y).
 
 主任务 loss 是标准交叉熵：
 
-```math
+```text
 L_{\mathrm{main}}
 =
 -\mathbb{E}_{(x,y)\sim\mathcal{D}}
@@ -136,7 +140,7 @@ L_{\mathrm{main}}
 
 对抗 loss 为：
 
-```math
+```text
 L_{\mathrm{adv}}
 =
 -\mathbb{E}_{(x,b)\sim\mathcal{D}}
@@ -145,7 +149,7 @@ L_{\mathrm{adv}}
 
 对应的 saddle-point 形式是：
 
-```math
+```text
 \min_\theta \max_\phi
 \mathbb{E}_{(x,b)\sim\mathcal{D}}
 \left[
@@ -159,7 +163,7 @@ L_{\mathrm{adv}}
 
 单纯对抗去偏可能会过度删除有用金融信息，尤其是在轻量模型容量有限时。FinFair 因此引入 rational teacher。teacher 在 curated unbiased financial questions 上训练，然后被冻结，用其输出分布 $p_T(y\mid x)$ 约束 student：
 
-```math
+```text
 L_{\mathrm{distill}}
 =
 \mathrm{KL}
@@ -180,7 +184,7 @@ p_\theta(y\mid x)
 
 论文中的多目标优化形式为：
 
-```math
+```text
 \min_\theta
 \left[
 L_{\mathrm{main}}
@@ -195,7 +199,7 @@ L_{\mathrm{adv}}^\star = \max_\phi L_{\mathrm{adv}}(\theta,\phi).
 
 实际训练中使用 GRL 近似 saddle point，显式总损失为：
 
-```math
+```text
 L_{\mathrm{total}}
 =
 L_{\mathrm{main}}
@@ -217,7 +221,9 @@ L_{\mathrm{main}}
 4. 通过自动过滤与人工复筛减少语义漂移和类别混杂；
 5. 形成按 `base_id` 分组的反事实评估集。
 
-![HMA-BDE data process](assets/data_process.png)
+<p align="center">
+  <img src="assets/data_process.png" alt="HMA-BDE data process" width="68%">
+</p>
 
 demo 中的 JSONL 样例格式如下：
 
@@ -240,7 +246,7 @@ demo 中的 JSONL 样例格式如下：
 
 ### Sample-level Accuracy
 
-```math
+```text
 \mathrm{Acc}
 =
 \frac{1}{N}
@@ -255,7 +261,7 @@ demo 中的 JSONL 样例格式如下：
 
 对每个反事实题组 $G_m$，若组内所有 variants 的预测一致，则该题组 consistent：
 
-```math
+```text
 \mathrm{Cons}
 =
 \frac{1}{M}
@@ -270,7 +276,7 @@ demo 中的 JSONL 样例格式如下：
 
 题组不仅要预测一致，还要预测正确：
 
-```math
+```text
 \mathrm{CC}
 =
 \frac{1}{M}
@@ -310,13 +316,17 @@ finfair_demo | 1.000           | 1.000                   | 1.000                
 
 ### Baseline vs. FinFair
 
-![Baseline vs FinFair](assets/baseline_vs_finfair.png)
+<p align="center">
+  <img src="assets/baseline_vs_finfair.png" alt="Baseline vs FinFair" width="78%">
+</p>
 
 论文中，普通轻量监督模型在反事实一致性上表现较弱，而 FinFair 显著提升 consistency 和 consistency-correctness。
 
 ### 轻量模型与 LLM 对比
 
-![Seven model comparison](assets/7_model_vs.png)
+<p align="center">
+  <img src="assets/7_model_vs.png" alt="Seven model comparison" width="92%">
+</p>
 
 论文报告的主要对比结果包括：
 
@@ -332,7 +342,9 @@ finfair_demo | 1.000           | 1.000                   | 1.000                
 
 ### 消融实验
 
-![FinFair ablation](assets/finfair_ablation.png)
+<p align="center">
+  <img src="assets/finfair_ablation.png" alt="FinFair ablation" width="84%">
+</p>
 
 | Variant | Consistency | Sample Acc. | Consistent-Correct |
 |---|---:|---:|---:|
@@ -345,7 +357,9 @@ finfair_demo | 1.000           | 1.000                   | 1.000                
 
 ### 蒸馏策略比较
 
-![FinFair distillation](assets/finfair_distillation.png)
+<p align="center">
+  <img src="assets/finfair_distillation.png" alt="FinFair distillation" width="84%">
+</p>
 
 | Distillation Strategy | Consistency | Sample Acc. | Consistent-Correct |
 |---|---:|---:|---:|
