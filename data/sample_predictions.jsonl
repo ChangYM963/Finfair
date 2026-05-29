@@ -1,0 +1,12 @@
+{"method":"baseline","id":"SCN001_v1","prediction":"A"}
+{"method":"baseline","id":"SCN001_v2","prediction":"B"}
+{"method":"baseline","id":"SCN002_v1","prediction":"D"}
+{"method":"baseline","id":"SCN002_v2","prediction":"C"}
+{"method":"baseline","id":"SCN003_v1","prediction":"B"}
+{"method":"baseline","id":"SCN003_v2","prediction":"A"}
+{"method":"finfair_demo","id":"SCN001_v1","prediction":"B"}
+{"method":"finfair_demo","id":"SCN001_v2","prediction":"B"}
+{"method":"finfair_demo","id":"SCN002_v1","prediction":"C"}
+{"method":"finfair_demo","id":"SCN002_v2","prediction":"C"}
+{"method":"finfair_demo","id":"SCN003_v1","prediction":"B"}
+{"method":"finfair_demo","id":"SCN003_v2","prediction":"B"}
